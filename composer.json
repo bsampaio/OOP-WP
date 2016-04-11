@@ -1,0 +1,19 @@
+{
+    "name": "bgrillo/oop-wp",
+    "description": "Library to OOP Wordpress posts",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Breno Grillo",
+            "email": "breno@criativa.com.br"
+        }
+    ],
+    "require": {
+        "php": ">=5.5.1"
+    },
+    "autoload": {
+        "psr-0": {
+            "OOP_WP": "./"
+        }
+    }
+}

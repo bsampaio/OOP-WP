@@ -136,4 +136,31 @@ class Post {
 
       return self::find($next->ID);
     }
+
+    private static function buildArgs($type = "post", $ppp = -1, array $merge = []) {
+        
+        $page = ($page === '') ? 1 : $page;
+        $args = [
+          'post_type' => $type,
+          'post_status' => 'publish',
+          'posts_per_page' => $ppp
+        ];
+
+        $args = array_merge($args, $merge);
+
+        return $args;
+    }
+
+    private static function doQuery($type = "post", $ppp, array $merge = []) {
+      $query = new WP_Query(self::buildArgs($type, $ppp, $merge));
+      return self::convert($query->get_posts());
+    }
+
+    public static function first($type = 'post') {
+      $posts = self::doQuery($type, 1, []);
+      if(!empty($posts)) {
+        return $posts[0];
+      }
+      return [];
+    }
 }

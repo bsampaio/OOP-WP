@@ -6,4 +6,6 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
+    'OOP_WP\\Post' => $baseDir . '/src/Post.php',
+    'OOP_WP\\Request' => $baseDir . '/src/Request.php',
 );

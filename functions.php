@@ -1,18 +1,37 @@
 <?php 
-
+/**
+ * Essa biblioteca de funções só é funcional dentro do arquivo "functions.php" do 
+ * Wordpress.
+ * 
+ * Para um melhor uso, é recomendado utilizar o autoload do composer.
+ */
 
 function pLink($post) {
 	return get_permalink($post);
 }
 
+/**
+ * Retorna o nome da categoria pelo ID da mesma
+ * @param  int $catId ID da categoria
+ * @return string        Nome da categoria
+ */
 function catName($catId) {
     return get_cat_name($catId);
 }
 
+/**
+ * Retorna a URL da imagem de destaque do post
+ * @param  WP_Post $post 
+ * @return string       Url da imagem
+ */
 function thumb($post) {
     return wp_get_attachment_url(get_post_thumbnail_id($post));
 }
 
+/**
+ * Atalho para a função de obtenção de URL do tema
+ * @return [type] [description]
+ */
 function tUrl() {
 	return get_bloginfo('template_url');
 }

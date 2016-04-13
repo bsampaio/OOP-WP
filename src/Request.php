@@ -29,8 +29,13 @@ class Request
 
     public static function isWhat($what)
     {
+        if(!isset($_SERVER['REQUEST_METHOD'])) {
+            throw new \Exception("REQUEST_METHOD is not allowed in this mode. Check if you're using with console.", 1);
+        }
         if ($_SERVER['REQUEST_METHOD'] == strtoupper($what)) {
             return true;
+        } else {
+            throw new \Exception("Request Method " . $what . " not found", 1);
         }
 
         return false;

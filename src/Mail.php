@@ -1,48 +1,62 @@
 <?php
 
-require '../vendor/autoload.php';
-
 namespace OOP_WP;
 
-class Mail extends PHPMailer\PHPMailer{
+require_once __DIR__ . '/../vendor/phpmailer/phpmailer/PHPMailerAutoload.php';
 
-	private static $user = 'mattura@gmail.com';
-	private static $password = 'mattura!@#';
-	private static $host = 'smtp.gmail.com'
+class Mail extends \PHPMailer 
+{
+    private static $from = MAIL_FROM_DEFAULT;
+	private static $user = MAIL_USERNAME;
+	private static $password = MAIL_PASSWORD;
+	private static $host = MAIL_SMTP_SERVER;
+    private static $debug = MAIL_DEBUG;
 
 	public function __construct()
 	{
-		$this->SMTPSecure = 'tls';
-		$this->SMTPAuth = 'tls';
-		$this->Port = 587;
+        $this->CharSet = 'utf-8';
+		if(MAIL_SSL) {
+			$this->SMTPSecure = 'tls';
+			$this->SMTPAuth = true;
+            $this->SMTPDebug = self::$debug;
+		}
+        $this->Username = self::$user;
+		$this->Port = MAIL_PORT;
 		$this->Host = self::$host;
 		$this->Password = self::$password;
 	}
 
 	public static function simple($to = [], $subject, $body, $from = null) {
-		$from = empty($from) ? self::$user : $from;
+		$from = empty($from) ? self::$from : $from;
 		$mail = new self();
 		$mail->setFrom($from);
-		$this->isSMTP();
-		$this->isHtml(true);
+		if(MAIL_SSL) {
+           $mail->isSMTP();
+		}
+		$mail->isHtml(true);
 
 		if(empty($to)) {
 			return false;
 		}
 		
 		foreach ($to as $t) {
-			$mail->addAddress($to);
+			$mail->addAddress($t);
 		}
 
 		$mail->addReplyTo($from);
 		$mail->Subject = $subject;
 		$mail->Body = $body;
-		$mail->AltBody = strip_tags(str_replace(‘<br />’,”\n”,$body));
+		$mail->AltBody = strip_tags(str_replace("<br />","\n",$body));
 		return $mail;
 	}
+        
+    public function getError() {
+        return $this->ErrorInfo;
+    }
 
-	public static function send(&$mail) {
+	public static function deliver(&$mail) {
 		if(!$mail->send()) {
+            echo $mail->getError();
 		    return false;
 		} else {
 		    return true;

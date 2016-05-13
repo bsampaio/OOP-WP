@@ -36,6 +36,84 @@ function tUrl() {
 	return get_bloginfo('template_url');
 }
 
+/**
+ * Atalho para a função de obtenção do diretório do tema
+ * @return [type] [description]
+ */
+function tDir() {
+  return get_template_directory();
+}
+
+/**
+ * Obtém a URL de um arquivo dentro da pasta <tema>/css
+ * optando sempre pelo arquivo contendo o .min
+ * @param  array $files nome do arquivo com extensão .css;
+ * @return [type]       [description]
+ */
+function css($files) {
+  $styles = '';
+  if(is_array($files)) {
+    foreach ($files as $file) {
+      $styles .= cssWrap(findFileUrl($file, '.css', '/css/'));
+    }
+  }
+  echo $styles;
+}
+
+function cssWrap($url) {
+  return '<link rel="stylesheet" type="text/css" href="' . $url . '">';
+}
+
+
+/**
+ * Obtém a URL de um arquivo dentro da pasta <tema>/js
+ * optando sempre pelo arquivo contendo o .min
+ * @param  array $file nome do arquivo com extensão .js;
+ * @return string   Url do arquivo encontrado
+ */
+function js($files) {
+  $scripts = '';
+  if(is_array($files)) {
+    foreach ($files as $file) {
+      $scripts .= jsWrap(findFileUrl($file, '.js', '/js/'));
+    }
+  }
+
+  echo $scripts;
+}
+
+function findFileUrl($file, $extension, $directory, $min = true) {
+  $tDir = tDir();
+  $tUrl = tUrl();
+
+  $isLiteral = preg_match("/.+\\" . $extension . '$/', $file);
+  if($isLiteral) {
+    $physicFile = $tDir . $directory . $file;
+    $url = $tUrl . $directory . $file;
+    if(file_exists($physicFile)) {
+      return $url;
+    }
+  }
+
+  if($min) {
+    if(file_exists($tDir . $directory . $file . '.min' . $extension)) {
+      $url = $tUrl . $directory . $file . '.min' . $extension;
+      return $url;
+    }
+  }
+
+  if(file_exists($tDir . $directory . $file . $extension)) {
+    $url = $tUrl . $directory . $file . $extension;
+    return $url;
+  }
+
+  return '';
+}
+
+function jsWrap($url) {
+  return '<script type="text/javascript" src="' . $url . '"></script>';
+}
+
 function excerpt($string, $maximumSize) {
   if(strlen($string) > $maximumSize) {
     $ending = '...';
@@ -68,9 +146,13 @@ function pDate($post, $format = 'd/m/Y') {
     return get_the_date($format, $post);
 }
 
-function pExcerpt($post) {
-    $excerpt = ( $post->post_excerpt ) ? $post->post_excerpt : $post->post_content;
-    $excerpt = strip_tags(html_entity_decode($excerpt));
+function pExcerpt($post, $deep = true) {
+    if($deep) {
+      $excerpt = ( $post->post_excerpt ) ? $post->post_excerpt : $post->post_content;
+      $excerpt = strip_tags(html_entity_decode($excerpt));
+    } else {
+      return $post->post_excerpt;
+    }
     return $excerpt;
 }
 

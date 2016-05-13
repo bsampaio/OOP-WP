@@ -2,7 +2,7 @@
 
 namespace OOP_WP;
 
-require '../functions.php';
+require  __DIR__ . '/../functions.php';
 
 class Post {
     public $id;
@@ -162,5 +162,9 @@ class Post {
         return $posts[0];
       }
       return [];
+    }
+
+    public static function setupFunctions() {
+      require_once __DIR__ . '/../functions.php';
     }
 }

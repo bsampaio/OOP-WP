@@ -36,6 +36,141 @@ function tUrl() {
 	return get_bloginfo('template_url');
 }
 
+/**
+ * Atalho para a função de obtenção do diretório do tema
+ * @return [type] [description]
+ */
+function tDir() {
+  return get_template_directory();
+}
+
+/**
+ * Obtém a URL de um arquivo dentro da pasta <tema>/css
+ * optando sempre pelo arquivo contendo o .min
+ * @param  array $files nome do arquivo com extensão .css;
+ * @return [type]       [description]
+ */
+function css($files, $combine = false) {
+  $styles = '';
+  if(is_array($files)) {
+    if($combine) {
+      foreach ($files as $file) {
+        $styles .= getContents($file, '.css', '/css/') . "\n";
+      }
+
+      echo "<!-- COMBINED CSS --> \n" . "<style>" . trim($styles) . "</style>";
+      return;
+    } else {
+      foreach ($files as $file) {
+        $styles .= cssWrap(findFileUrl($file, '.css', '/css/'));
+      }  
+    }
+  }
+  
+  echo $styles;
+}
+
+function cssWrap($url) {
+  return '<link rel="stylesheet" type="text/css" href="' . $url . '">';
+}
+
+
+/**
+ * Obtém a URL de um arquivo dentro da pasta <tema>/js
+ * optando sempre pelo arquivo contendo o .min
+ * @param  array $file nome do arquivo com extensão .js;
+ * @return string   Url do arquivo encontrado
+ */
+function js($files, $combine = false) {
+  $scripts = '';
+  if(is_array($files)) {
+    if($combine) {
+      foreach ($files as $file) {
+         $scripts .= getContents($file, '.js', '/js/') . "\n";
+      }
+
+      echo "<!-- COMBINED JAVASCRIPT -->" . "<script type='text/javascript'>" . trim($scripts) . "</script>";
+      return;  
+    } else {
+      foreach ($files as $file) {
+        $scripts .= jsWrap(findFileUrl($file, '.js', '/js/'));
+      }
+    }
+  }
+
+  echo $scripts;
+}
+
+function compress($buffer) {
+    /* remove comments */
+    $buffer = preg_replace("/((?:\/\*(?:[^*]|(?:\*+[^*\/]))*\*+\/)|(?:\/\/.*))/", "", $buffer);
+    /* remove tabs, spaces, newlines, etc. */
+    $buffer = str_replace(array("\r\n","\r","\t","\n",'  ','    ','     '), '', $buffer);
+    /* remove other spaces before/after ) */
+    $buffer = preg_replace(array('(( )+\))','(\)( )+)'), ')', $buffer);
+    return $buffer;
+}
+
+function getContents($file, $extension, $directory, $min = true) {
+  $tDir = tDir();
+  $tUrl = tUrl();
+
+  $isLiteral = preg_match("/.+\\" . $extension . '$/', $file);
+  if($isLiteral) {
+    $physicFile = $tDir . $directory . $file;
+    $contents = "";
+    if(file_exists($physicFile)) {
+      return file_get_contents($physicFile);
+    }
+  }
+
+  if($min) {
+    if(file_exists($tDir . $directory . $file . '.min' . $extension)) {
+      $path = $tDir . $directory . $file . '.min' . $extension;
+      return file_get_contents($path);
+    }
+  }
+
+  if(file_exists($tDir . $directory . $file . $extension)) {
+    $path = $tDir . $directory . $file . $extension;
+    return file_get_contents($path);
+  }
+
+  return '';
+}
+
+function findFileUrl($file, $extension, $directory, $min = true) {
+  $tDir = tDir();
+  $tUrl = tUrl();
+
+  $isLiteral = preg_match("/.+\\" . $extension . '$/', $file);
+  if($isLiteral) {
+    $physicFile = $tDir . $directory . $file;
+    $url = $tUrl . $directory . $file;
+    if(file_exists($physicFile)) {
+      return $url;
+    }
+  }
+
+  if($min) {
+    if(file_exists($tDir . $directory . $file . '.min' . $extension)) {
+      $url = $tUrl . $directory . $file . '.min' . $extension;
+      return $url;
+    }
+  }
+
+  if(file_exists($tDir . $directory . $file . $extension)) {
+    $url = $tUrl . $directory . $file . $extension;
+    return $url;
+  }
+
+  return '';
+}
+
+function jsWrap($url) {
+  return '<script type="text/javascript" src="' . $url . '"></script>';
+}
+
 function excerpt($string, $maximumSize) {
   if(strlen($string) > $maximumSize) {
     $ending = '...';
@@ -68,9 +203,13 @@ function pDate($post, $format = 'd/m/Y') {
     return get_the_date($format, $post);
 }
 
-function pExcerpt($post) {
-    $excerpt = ( $post->post_excerpt ) ? $post->post_excerpt : $post->post_content;
-    $excerpt = strip_tags(html_entity_decode($excerpt));
+function pExcerpt($post, $deep = true) {
+    if($deep) {
+      $excerpt = ( $post->post_excerpt ) ? $post->post_excerpt : $post->post_content;
+      $excerpt = strip_tags(html_entity_decode($excerpt));
+    } else {
+      return $post->post_excerpt;
+    }
     return $excerpt;
 }
 
@@ -241,4 +380,8 @@ function credentials() {
 
 function d($variable) {
   return var_dump($variable);
+}
+
+function convert(array $posts) {
+  return \OOP_WP\Post::convert($posts);
 }

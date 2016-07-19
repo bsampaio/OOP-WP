@@ -1,8 +1,8 @@
-<?php 
+<?php
 /**
- * Essa biblioteca de funções só é funcional dentro do arquivo "functions.php" do 
+ * Essa biblioteca de funções só é funcional dentro do arquivo "functions.php" do
  * Wordpress.
- * 
+ *
  * Para um melhor uso, é recomendado utilizar o autoload do composer.
  */
 
@@ -21,7 +21,7 @@ function catName($catId) {
 
 /**
  * Retorna a URL da imagem de destaque do post
- * @param  WP_Post $post 
+ * @param  WP_Post $post
  * @return string       Url da imagem
  */
 function thumb($post) {
@@ -63,10 +63,10 @@ function css($files, $combine = false) {
     } else {
       foreach ($files as $file) {
         $styles .= cssWrap(findFileUrl($file, '.css', '/css/'));
-      }  
+      }
     }
   }
-  
+
   echo $styles;
 }
 
@@ -90,7 +90,7 @@ function js($files, $combine = false) {
       }
 
       echo "<!-- COMBINED JAVASCRIPT -->" . "<script type='text/javascript'>" . trim($scripts) . "</script>";
-      return;  
+      return;
     } else {
       foreach ($files as $file) {
         $scripts .= jsWrap(findFileUrl($file, '.js', '/js/'));
@@ -240,10 +240,10 @@ function getPostsByType($type = 'post', $count = 4, $otherParams = []) {
   return $posts;
 }
 
-function getCategories() {
+function getCategories($json = true, $args = []) {
 
-    $args = array(
-        'type'                     => 'post',
+    $default = array(
+        'type'                     => 'any',
         'child_of'                 => 0,
         'parent'                   => '',
         'orderby'                  => 'name',
@@ -254,10 +254,15 @@ function getCategories() {
         'include'                  => '',
         'number'                   => '',
         'taxonomy'                 => 'category',
-        'pad_counts'               => false 
+        'pad_counts'               => false
     );
+		$args = array_merge($default, $args);
     $categories = get_categories($args);
-    die(Request::toJson($categories));
+		if($json) {
+				die(Request::toJson($categories));
+		}
+
+		return $categories;
 }
 
 function buildArgs($ppp = 2, array $merge = []) {
@@ -274,7 +279,7 @@ function buildArgs($ppp = 2, array $merge = []) {
 
     $category = Request::get('category');
     $category = ($category === '') ? false : $category;
-    
+
     if($category) {
         $catArgs = [
             'cat' => $category
@@ -343,7 +348,7 @@ function getPosts($ppp = 2, $json = true, $unstoppable = false) {
 
     if($json) {
         $response = Request::toJson($posts);
-    } 
+    }
 
     if($unstoppable) {
         return $response;
@@ -355,8 +360,8 @@ function getPosts($ppp = 2, $json = true, $unstoppable = false) {
 function postCount() {
     if(!Request::isGet()) {
         die(Request::error(__("Method not allowed")));
-    }    
-    
+    }
+
 
     $query = new WP_Query(buildArgs());
     die(Request::toJson([ 'count' => $query->found_posts ]));
